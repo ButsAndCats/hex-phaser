@@ -4,14 +4,14 @@ Tile = function (game, x, y, tileImage, isVertical, i, j, type) {
   Phaser.Sprite.call(this, game, x, y, tileImage);
   this.anchor.setTo(0.5, 0.5);
 
-  if(i === 6 && j === 0) player1.location = {
+  if(i === 6 && j === 0) players[1].location = {
     'x': x,
     'y': y,
     'i': i,
     'j': j,
     'direction': 1
   }
-  if(i === 6 && j === 12) player2.location = {
+  if(i === 6 && j === 12) players[2].location = {
     'x': x,
     'y': y,
     'i': i,
@@ -21,6 +21,8 @@ Tile = function (game, x, y, tileImage, isVertical, i, j, type) {
 
   this.name = "tile"+i+"_"+j;
   this.type = type;
+  this.i = i;
+  this.j = j;
 
   this.inputEnabled = true;
   this.input.useHandCursor = true;
@@ -42,5 +44,8 @@ Tile.prototype.rollOver = function() {
 };
 // Console log the tile that we have clicked on
 Tile.prototype.upClick = function() {
-  console.log(this);
+  if(this.marked) {
+    unHighlightMoves();
+    moveToCoordinates([this.i, this.j]);
+  }
 };

@@ -1,8 +1,10 @@
 // Custom game object
 
-Arrow = function(game, x, y, arrowImage, angle, name) {
-  Phaser.Sprite.call(this, game, x, y, arrowImage, 0);
-  this.name = name;
+Arrow = function(game, x, y, arrowImage, angle, direction) {
+  // this instance, game, x, y, image key
+  Phaser.Sprite.call(this, game, x, y, arrowImage);
+  this.name = 'arrow'+direction;
+  this.direction = direction;
   this.angle += angle;
   this.anchor.setTo(0.5, 0.5);
   this.visible = false;
@@ -14,7 +16,6 @@ Arrow = function(game, x, y, arrowImage, angle, name) {
   this.events.onInputOver.add(this.rollOver, this);
   this.events.onInputUp.add(this.upClick, this);
   directionalArrows.add(this);
-
 }
 
 // Construct arrow
@@ -26,11 +27,16 @@ Arrow.prototype.rollOut = function(){
   this.scale.y = 1;
 }
 Arrow.prototype.rollOver = function(){
-  console.log(this)
+  this.frame = 1;
   this.scale.x = 1.4;
   this.scale.y = 1.4;
 }
 // Handle the direction arrow being clicked on
+// Note for futer debugging that localhost caches the images. visit the image
+// url to update
 Arrow.prototype.upClick = function() {
-  this.setFrames = 1;
+  // Hide the arrows
+  directionalArrows.visible = false;
+  // Change the player direction
+  changeDirection(players[playerTurn], this.direction);
 };
