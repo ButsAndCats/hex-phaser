@@ -23,13 +23,14 @@ Arrow.prototype = Object.create(Phaser.Sprite.prototype);
 Arrow.prototype.constructor = Arrow;
 
 Arrow.prototype.rollOut = function(){
+  this.frame = 0;
   this.scale.x = 1;
   this.scale.y = 1;
 }
 Arrow.prototype.rollOver = function(){
   this.frame = 1;
-  this.scale.x = 1.4;
-  this.scale.y = 1.4;
+  this.scale.x = 1.5;
+  this.scale.y = 1.5;
 }
 // Handle the direction arrow being clicked on
 // Note for futer debugging that localhost caches the images. visit the image

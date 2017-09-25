@@ -1,28 +1,31 @@
 //  Here is a custom game object
-Tile = function (game, x, y, tileImage, isVertical, i, j, type) {
+Tile = function (game, x, y, tileImage, isVertical, i, j, k, type) {
 
   Phaser.Sprite.call(this, game, x, y, tileImage);
   this.anchor.setTo(0.5, 0.5);
 
-  if(i === 6 && j === 0) players[1].location = {
+  if(i === 6 && j === -3) players[1].location = {
     'x': x,
     'y': y,
     'i': i,
     'j': j,
+    'k': k,
     'direction': 1
   }
-  if(i === 6 && j === 12) players[2].location = {
+  if(i === 6 && j === 9) players[2].location = {
     'x': x,
     'y': y,
     'i': i,
     'j': j,
+    'k': k,
     'direction': 4
   }
 
-  this.name = "tile"+i+"_"+j;
+  this.name = 'tile'+i+'_'+j+'_'+k;
   this.type = type;
   this.i = i;
   this.j = j;
+  this.k = k;
 
   this.inputEnabled = true;
   this.input.useHandCursor = true;
@@ -46,6 +49,6 @@ Tile.prototype.rollOver = function() {
 Tile.prototype.upClick = function() {
   if(this.marked) {
     unHighlightMoves();
-    moveToCoordinates([this.i, this.j]);
+    moveToCoordinates([this.i, this.j, this.k]);
   }
 };
