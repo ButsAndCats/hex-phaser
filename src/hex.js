@@ -6,19 +6,24 @@ Create tile spritesheet
 */
 
 // Construct a new phaser game
-var game = new Phaser.Game(800, 680, Phaser.AUTO, 'Container'), Game = function() {};
-Game.prototype = {
+var game = new Phaser.Game(800, 680, Phaser.AUTO, 'Container'),
+Main = function() {};
+
+Main.prototype = {
   preload: function() {
     game.load.image('loading',  'assets/images/loading.png');
-    game.load.image('splash-bg', 'assets/loading-bg.png');
+    game.load.image('splash-bg', 'assets/images/loading-bg.png');
     // game.load.image('brand',    'assets/images/logo.png');
-    game.load.script('splash',  'states/Splash.js');
+    game.load.script('splash',  'src/states/Splash.js');
   },
   create: function() {
     game.state.add('Splash', Splash);
     game.state.start('Splash');
   }
 };
+
+game.state.add('Main', Main);
+game.state.start('Main');
 //
 // var key = {
 //   1: 'tile-grass',
