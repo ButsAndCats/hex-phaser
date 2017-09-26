@@ -12,6 +12,7 @@ Splash.prototype = {
   },
 
   loadSounds: function () {
+    game.load.audio('crystal-cave', 'assets/audio/song18.mp3');
   },
 
   loadImages: function () {
@@ -27,16 +28,17 @@ Splash.prototype = {
   },
 
   init: function () {
-    this.loadingBar = game.make.sprite(game.world.centerX-(387/2), 400, "loading");
-    this.status = game.make.text(game.world.centerX, 380, 'Loading...', {fill: 'white'});
+    this.logo = game.make.sprite(game.world.centerX, 190, 'logo');
+    this.loadingBg = game.make.sprite(game.world.centerX, 300, 'loading-bg');
+    this.loadingBar = game.make.sprite(game.world.centerX, 300, 'loading');
   },
 
   // The preload function then will call all of the previously defined functions:
   preload: function () {
     // Add everthing for the loading screen
-    game.add.sprite(0, 0, 'splash-bg');
-    game.add.existing(this.loadingBar);
-    game.add.existing(this.status);
+    game.add.existing(this.loadingBg).anchor.setTo(0.5,0.5);
+    game.add.existing(this.loadingBar).anchor.setTo(0.5,0.5);
+    game.add.existing(this.logo).anchor.setTo(0.5,0.5);
     this.load.setPreloadSprite(this.loadingBar);
 
     // Start loading
@@ -55,16 +57,15 @@ Splash.prototype = {
   },
 
   addGameMusic: function () {
-    // music = game.add.audio('dangerous');
-    // music.loop = true;
-    // music.play();
+    music = game.add.audio('crystal-cave');
+    music.loop = true;
+    music.play();
   },
 
   create: function() {
-    this.status.setText('Ready!');
     this.addGameStates();
-    // this.addGameMusic();
-
+    this.addGameMusic();
+    console.log('ready')
     setTimeout(function () {
       game.state.start("Menu");
     }, 1000);

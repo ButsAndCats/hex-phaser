@@ -6,15 +6,15 @@ Create tile spritesheet
 */
 
 // Construct a new phaser game
-var game = new Phaser.Game(800, 680, Phaser.AUTO, 'Container'),
+var game = new Phaser.Game(800, 680, Phaser.AUTO, 'Container', null, true),
 Main = function() {};
 
 Main.prototype = {
   preload: function() {
-    game.load.image('loading',  'assets/images/loading.png');
-    game.load.image('splash-bg', 'assets/images/loading-bg.png');
-    // game.load.image('brand',    'assets/images/logo.png');
-    game.load.script('splash',  'src/states/Splash.js');
+    game.load.image('loading', 'assets/images/loading.png');
+    game.load.image('loading-bg', 'assets/images/loading-bg.png');
+    game.load.image('logo', 'assets/images/logo.png');
+    game.load.script('splash', 'src/states/Splash.js');
   },
   create: function() {
     game.state.add('Splash', Splash);
