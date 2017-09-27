@@ -21,6 +21,10 @@ Splash.prototype = {
     game.load.image('tile-grass', 'assets/images/tile-grass.png');
     game.load.image('tile-stone', 'assets/images/tile-stone.png');
     game.load.image('interface-mouseover-tile', 'assets/images/interface-mouseover-tile.png');
+    game.load.image('chat-input', 'assets/images/chat-input.png');
+    game.load.image('send-btn-down', 'assets/images/send-btn-down.png');
+    game.load.image('send-btn-up', 'assets/images/send-btn-up.png');
+    game.load.image('interface-mouseover-tile', 'assets/images/interface-mouseover-tile.png');
     game.load.spritesheet('interface-direction-arrow', 'assets/images/interface-direction-arrow.png', 16, 16);
     game.load.spritesheet('player', 'assets/images/player.png', 32, 32);
   },

@@ -4,19 +4,21 @@ var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
 
 // Serving static files
-app.use('/css',express.static(__dirname + '/css'));
-app.use('/js',express.static(__dirname + '/js'));
+app.use('/src',express.static(__dirname + '/src'));
+app.use('/lib',express.static(__dirname + '/lib'));
 app.use('/assets',express.static(__dirname + '/assets'));
 
 app.get('/',function(req,res){
   res.sendFile(__dirname+'/index.html');
 });
 
-server.listen(8081,function(){ // Listens to port 8081
+// Keep track of the last id assigned to a new player
+server.lastPlayderID = 0;
+
+// Listens to port 8081
+server.listen(8081,function(){
   console.log('Listening on '+server.address().port);
 });
-
-server.lastPlayderID = 0; // Keep track of the last id assigned to a new player
 
 io.on('connection',function(socket){
   socket.on('newplayer',function(){
