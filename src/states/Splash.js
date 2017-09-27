@@ -6,6 +6,7 @@ Splash.prototype = {
     game.load.script('tile',  'src/classes/Tile.js');
     game.load.script('splash',  'src/classes/Arrow.js');
     // States
+    game.load.script('lobby','src/states/Lobby.js');
     game.load.script('menu','src/states/Menu.js');
     game.load.script('game','src/states/Game.js');
     game.load.script('gameOver','src/states/GameOver.js');
@@ -50,6 +51,7 @@ Splash.prototype = {
 
   addGameStates: function () {
     game.state.add("Menu", Menu);
+    game.state.add("Lobby", Lobby);
     game.state.add("Game", Game);
     game.state.add("GameOver", GameOver);
     // game.state.add("Credits", Credits);
@@ -67,7 +69,7 @@ Splash.prototype = {
     this.addGameMusic();
     console.log('ready')
     setTimeout(function () {
-      game.state.start("Menu");
+      game.state.start("Lobby");
     }, 1000);
   }
 
