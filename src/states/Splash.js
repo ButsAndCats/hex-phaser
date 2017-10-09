@@ -2,6 +2,9 @@ var Splash = function () {};
 
 Splash.prototype = {
   loadScripts: function () {
+    // Plugins
+    game.load.script('phaser-input', 'lib/phaser-input.min.js')
+    game.load.script('phaser-input', 'lib/phaser-scrollable.min.js')
     // Classes
     game.load.script('tile',  'src/classes/Tile.js');
     game.load.script('splash',  'src/classes/Arrow.js');
@@ -22,6 +25,8 @@ Splash.prototype = {
     game.load.image('tile-stone', 'assets/images/tile-stone.png');
     game.load.image('interface-mouseover-tile', 'assets/images/interface-mouseover-tile.png');
     game.load.image('chat-input', 'assets/images/chat-input.png');
+    game.load.image('chat-output', 'assets/images/chat-output.png');
+    game.load.image('chat-container', 'assets/images/chat-container.png');
     game.load.image('send-btn-down', 'assets/images/send-btn-down.png');
     game.load.image('send-btn-up', 'assets/images/send-btn-up.png');
     game.load.image('interface-mouseover-tile', 'assets/images/interface-mouseover-tile.png');
@@ -65,13 +70,18 @@ Splash.prototype = {
   addGameMusic: function () {
     music = game.add.audio('crystal-cave');
     music.loop = true;
-    music.play();
+    // music.play();
+  },
+
+  initializePlugins: function() {
+    game.add.plugin(PhaserInput.Plugin);
   },
 
   create: function() {
     this.addGameStates();
     this.addGameMusic();
-    console.log('ready')
+    this.initializePlugins();
+
     setTimeout(function () {
       game.state.start("Lobby");
     }, 1000);

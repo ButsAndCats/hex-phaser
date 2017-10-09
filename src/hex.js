@@ -15,7 +15,6 @@ Main.prototype = {
     game.load.image('loading-bg', 'assets/images/loading-bg.png');
     game.load.image('logo', 'assets/images/logo.png');
     game.load.script('splash', 'src/states/Splash.js');
-    console.log(this)
   },
   create: function() {
     game.state.add('Splash', Splash);

@@ -16,22 +16,38 @@ app.get('/',function(req,res){
 server.lastPlayderID = 0;
 
 // Listens to port 8081
-server.listen(8081,function(){
+server.listen(8081, function() {
   console.log('Listening on '+server.address().port);
 });
 
-io.on('connection',function(socket){
-  socket.on('newplayer',function(){
+io.on('connection', function(socket) {
+  socket.on('playerConnectedToLobby', function() {
     socket.player = {
       id: server.lastPlayderID++,
-      x: randomInt(100,400),
-      y: randomInt(100,400)
+      name: 'George'
     };
-    socket.emit('allplayers',getAllPlayers());
-    socket.broadcast.emit('newplayer',socket.player);
+
+    // Return all of the other players in the lobby to the client that just connected
+    socket.emit('lobbyAllPlayers', getAllPlayers());
+
+    // send a message to all players excluding the triggerer
+    socket.broadcast.emit('playerConnectedToLobby', socket.player);
+    // log the player to the terminal
+    console.log(socket.player.name+' connected to the lobby');
+
+    // Listen for players sending messages to the lobby
+    socket.on('playerSentLobbyMessage', function(message) {
+      // Send the message to all the connected sockets
+      socket.broadcast.emit('playerSentLobbyMessage', socket.player);
+      // Log the message and player to the terminal
+      console.log(socket.player.name)
+      console.log(message)
+
+    });
   });
 });
 
+// Loop through the sockets and return all the connected players
 function getAllPlayers(){
   var players = [];
   Object.keys(io.sockets.connected).forEach(function(socketID){
@@ -39,8 +55,4 @@ function getAllPlayers(){
     if(player) players.push(player);
   });
   return players;
-}
-
-function randomInt (low, high) {
-  return Math.floor(Math.random() * (high - low) + low);
 }
