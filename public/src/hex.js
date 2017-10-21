@@ -8,6 +8,7 @@ Create tile spritesheet
 // Construct a new phaser game
 var game = new Phaser.Game(800, 680, Phaser.AUTO, 'Container', null, true),
 Main = function() {};
+var Player = {};
 
 Main.prototype = {
   preload: function() {

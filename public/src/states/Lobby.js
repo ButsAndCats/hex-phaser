@@ -4,6 +4,7 @@ TODO:
  - post local messages
  - channels
  - hit enter to send messages
+ - active playerlist
 */
 
 var Lobby = function () {};
@@ -14,26 +15,17 @@ Lobby.allPlayers = function(players) {
   console.log(players)
 }
 
-// Call back for when the send button is hit
-Lobby.sendMessage = function() {
-  // maintain focus after send has been clicked
-  this.chatTextInput.startFocus();
-  //Send the message to client to handle
-  Client.lobbyMessage(this.chatTextInput.value)
-  // empty the chat field
-  this.chatTextInput.resetText();
-}
-
 Lobby.prototype = {
   init: function () {
-    // Ensure the tab is always active
+    // Ensure the tab is always active so that new messages are pushed to the chat
     this.stage.disableVisibilityChange = true;
 
     // create interface images
     this.chatInput = game.make.sprite(game.world.centerX, 500, 'chat-input');
     this.chatOutput = game.make.sprite(game.world.centerX, 264, 'chat-output');
     this.chatContainer = game.make.sprite(game.world.centerX, 190 , 'chat-container');
-    this.sendButton = game.make.sprite(652, 506, 'send-btn-up');
+    this.sendButton = game.make.sprite(652, 506, 'send-btn');
+    this.playButton = game.make.sprite(game.world.centerX, 5, 'play-btn');
 
     // create input fields
     this.chatTextInput = game.make.inputField(60, 510, {
@@ -48,6 +40,9 @@ Lobby.prototype = {
     });
     // Maintain focus after submit
     this.chatTextInput.focusOutOnEnter = false;
+    this.chatTextInput.enterCallback = this.sendMessage;
+    this.chatTextInput.enterCallbackContext = this;
+
     //start with focus on the element
     this.chatTextInput.startFocus();
 
@@ -55,6 +50,7 @@ Lobby.prototype = {
 
   create: function() {
     // Add interface images
+    game.add.existing(this.playButton).anchor.setTo(0.5,0);
     game.add.existing(this.chatInput).anchor.setTo(0.5,0);
     game.add.existing(this.chatContainer).anchor.setTo(0.5,0);
     game.add.existing(this.chatOutput).anchor.setTo(0.5,0);
@@ -75,36 +71,76 @@ Lobby.prototype = {
       fill: '#54442F'
     };
     messageContainer = game.add.existing(new ScrollableArea(70, 270, 680, 210, params));
-    console.log(this)
     messageContainer.start();
+
+    // Event listener for the play button
+    this.playButton.inputEnabled = true;
+    // Toggle mouseover
+    this.playButton.events.onInputDown.add(function() {
+      this.playButton.frame = 1;
+    }, this);
+    this.playButton.events.onInputUp.add(function() {
+      this.playButton.frame = 0;
+    }, this);
 
     // Event listener for the send button
     this.sendButton.inputEnabled = true;
-    this.sendButton.events.onInputDown.add(Lobby.sendMessage, this);
+    // Toggle mouseover
+    this.sendButton.events.onInputDown.add(function() {
+      this.sendButton.frame = 1;
+    }, this);
+    this.sendButton.events.onInputUp.add(function() {
+      this.sendButton.frame = 0;
+    }, this);
+
+    this.sendButton.events.onInputDown.add(this.sendMessage, this);
 
     // Call this at the end so that everything else has loaded
     Client.playerConnectedToLobby();
-    console.log(this)
   },
 
-  postMessage: function(message) {
+  postToConsole: function(message) {
+    // should create different styles for different actions
     var textStyle = {
       font: '17px Futura',
       fill: '#54442F'
     };
+    // create the message
     var messageObject = game.make.text(0, (messageCount * 30), message, textStyle);
+    // append the message
     messageContainer.addChild(messageObject);
+    // Scroll down (x,y)
+    // console.log(((messageCount) * 30))
+    // console.log(messageContainer)
+
+    messageContainer.scrollTo(70, 270, 500, false);
+
+    // add to count
     messageCount++;
   },
 
-  createMessage: function(player, message) {
-    var text = player.name+': '+message;
-    this.postMessage(text)
+  sendMessage: function() {
+    if (this.chatTextInput.value != '') {
+      var text = 'George: '+this.chatTextInput.value;
+      this.postToConsole(text)
+
+      //Send the message to client to handle
+      Client.lobbyMessage(this.chatTextInput.value)
+      // empty the chat field
+      this.chatTextInput.resetText();
+      // maintain focus after send has been clicked
+      this.chatTextInput.startFocus();
+    }
   },
 
-  playerConnected: function(player) {
-    var text = player.name+' connected';
-    this.postMessage(text)
+  createMessage: function(message) {
+    var text = Player.name+': '+message;
+    this.postToConsole(text)
+  },
+
+  playerConnected: function() {
+    var text = Player.name+' connected';
+    this.postToConsole(text)
   }
 
 }
