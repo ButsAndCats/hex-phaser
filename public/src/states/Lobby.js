@@ -26,6 +26,8 @@ Lobby.prototype = {
     this.chatContainer = game.make.sprite(game.world.centerX, 190 , 'chat-container');
     this.sendButton = game.make.sprite(652, 506, 'send-btn');
     this.playButton = game.make.sprite(game.world.centerX, 5, 'play-btn');
+    this.stopButton = game.make.sprite(game.world.centerX, 5, 'stop-btn');
+    this.stopButton.visible = false;
 
     // create input fields
     this.chatTextInput = game.make.inputField(60, 510, {
@@ -51,6 +53,7 @@ Lobby.prototype = {
   create: function() {
     // Add interface images
     game.add.existing(this.playButton).anchor.setTo(0.5,0);
+    game.add.existing(this.stopButton).anchor.setTo(0.5,0);
     game.add.existing(this.chatInput).anchor.setTo(0.5,0);
     game.add.existing(this.chatContainer).anchor.setTo(0.5,0);
     game.add.existing(this.chatOutput).anchor.setTo(0.5,0);
@@ -85,8 +88,25 @@ Lobby.prototype = {
 
       var text = 'Searching for match...'
       this.postToConsole(text);
+      this.playButton.visible = false;
+      this.stopButton.visible = true;
     }, this);
 
+    // Event listener for the stop button
+    this.stopButton.inputEnabled = true;
+    // Toggle mouseover
+    this.stopButton.events.onInputDown.add(function() {
+      this.stopButton.frame = 1;
+    }, this);
+    this.stopButton.events.onInputUp.add(function() {
+      this.stopButton.frame = 0;
+      Client.findMatchCancel();
+
+      var text = 'Stopped searching';
+      this.postToConsole(text);
+      this.stopButton.visible = false;
+      this.playButton.visible = true;
+    }, this);
     // Event listener for the send button
     this.sendButton.inputEnabled = true;
     // Toggle mouseover

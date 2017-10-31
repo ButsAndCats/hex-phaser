@@ -7,7 +7,8 @@ var bodyParser = require('body-parser'), // For parsing incoming requests
     MongoStore = require('connect-mongo')(session); // Store sessions in Mongodb
 // Sockets
 var server = require('http').Server(app),
-    io = require('socket.io').listen(server);
+    io = require('socket.io').listen(server),
+    plug;
 // Misc
 const uuidv1 = require('uuid/v1'); // Generates unique universal random identifies for game ids.
 const loop = require('node-gameloop'); // Handles server client ticks
@@ -67,72 +68,39 @@ var nowTime = new Date().getTime(),
     matchSearchTimeout = 30; // seconds
 
 io.on('connection', function(socket) {
-  // Called from the client side when the user has been authenticated
-  socket.on('playerConnected', function(player) {
-    console.log(player.name+ ' connected');
+  plug = socket;
 
-    player.socket = socket.id;
-    player.connected = nowTime;
-    // Keeping track of the connected players
-    playersConnected[player.id] = player;
-    // console.log(playersConnected);
-  });
   // Called from the client when the vistor enters the lobby
-  socket.on('playerConnectedToLobby', function(player) {
+  plug.on('playerConnectedToLobby', function(player) {
     playersInLobby[player.id] = playersConnected[player.id]
     // Return all of the other players in the lobby to the client that just connected
-    socket.emit('lobbyAllPlayers', getAllPlayers());
+    plug.emit('lobbyAllPlayers', getAllPlayers());
 
     var confirmedPlayer = {
       name: playersInLobby[player.id].name,
       id: playersInLobby[player.id].id
     }
     // send a message to all players excluding the triggerer
-    socket.broadcast.emit('playerConnectedToLobby', confirmedPlayer);
+    plug.broadcast.emit('playerConnectedToLobby', confirmedPlayer);
     // log the player to the terminal
     console.log(playersConnected[player.id].name+' connected to the lobby');
 
     // Listen for players sending messages to the lobby
-    socket.on('playerSentLobbyMessage', function(message) {
-      // Send the message to all the connected sockets
-      socket.broadcast.emit('playerSentLobbyMessage', confirmedPlayer, message);
+    plug.on('playerSentLobbyMessage', function(message) {
+      // Send the message to all the connected plugs
+      plug.broadcast.emit('playerSentLobbyMessage', confirmedPlayer, message);
       // Log the message and player to the terminal
       console.log(confirmedPlayer.name)
       console.log(message)
 
     });
   });
-
-  socket.on('findMatchStart', function(player) {
-    var gameId = uuidv1();
-    // console.log(player)
-    // Incase the server has been rebooted since hte users started their session
-    if (playersConnected == {}) {
-      // TODO: Handle error
-    }
-
-    player = playersConnected[player.id];
-    console.log(playersConnected)
-
-    // send back the id of the game that has been created and add the id to the players local state
-	  socket.emit('findMatchStarted', { gameId: gameId });
-
-    // Create a 'host' room for the player based on the gameId.
-  	// If the player ends up being the 'join' the player, they will leave this room and join the 'host' room
-  	this.join(gameId);
-    // console.log(player);
-    playersLookingForMatch[player.id] = {
-      gameId: gameId,
-      startTime: nowTime,
-      startMuTime: nowMuTime,
-      player: player,
-      matchFound: false,
-      socket: socket.id
-    }
-
-    console.log(player.name +' joined game:'+gameId+' | find match start');
-
-  });
+  // Called from the client side when the user has been authenticated
+  plug.on('playerConnected', playerConnected);
+  // Called when the client starts finding a match
+  plug.on('findMatchStart', findMatchStart);
+  // Called when the client cancels finding a match
+  plug.on('findMatchCancel', findMatchCancel);
 });
 
 // Set the loop to 30fps
@@ -154,6 +122,46 @@ function serverLoop(frame, delta) {
 	if (playersLookingForMatch != {}) {
 		findMatchLoop();
 	}
+}
+
+function playerConnected(player) {
+  console.log(player.name+ ' connected');
+
+  player.plug = plug.id;
+  player.connected = nowTime;
+  // Keeping track of the connected players
+  playersConnected[player.id] = player;
+  // console.log(playersConnected);
+}
+
+function findMatchStart(player) {
+  var gameId = uuidv1();
+  // console.log(player)
+  // Incase the server has been rebooted since hte users started their session
+  if (playersConnected == {}) {
+    // TODO: emit server reboot and return.
+  }
+
+  player = playersConnected[player.id];
+  // console.log(playersConnected)
+
+  // send back the id of the game that has been created and add the id to the players local state
+  plug.emit('findMatchStarted', { gameId: gameId });
+
+  // Create a 'host' room for the player based on the gameId.
+	// If the player ends up being the 'join' the player, they will leave this room and join the 'host' room
+	this.join(gameId);
+  // console.log(player);
+  playersLookingForMatch[player.id] = {
+    gameId: gameId,
+    startTime: nowTime,
+    startMuTime: nowMuTime,
+    player: player,
+    matchFound: false,
+    plug: plug.id
+  }
+
+  console.log(player.name +' joined game:'+gameId+' | find match start');
 }
 
 // Handle players that are looking for a match
@@ -203,7 +211,7 @@ function matchFound(host, guest) {
   host.host = true;
 
 	// emit the event to the guest player that tells the client to join the host player's game
-	io.to(guest.socket).emit('matchJoinGame', { gameId: gameId });
+	io.to(guest.plug).emit('matchJoinGame', { gameId: gameId });
 
   console.log(guest.player.id + ': sending notice to join game | ' + gameId);
 
@@ -242,17 +250,26 @@ function findMatchTimeout(playerId) {
   console.log(playersConnected[playerId].name+': Timed out of match making');
 
   var gameId = playersLookingForMatch[playerId].gameId;
-  var socket = playersLookingForMatch[playerId].socket;
+  var plug = playersLookingForMatch[playerId].plug;
 
   // Emit the `findMatchTimeout` message to display the timeout in the front end
-  io.to(socket).emit('findMatchTimeout');
+  io.to(plug).emit('findMatchTimeout');
 
   // remove the player from the lookingForMatch object
 	delete playersLookingForMatch[playerId];
 }
 
+function findMatchCancel(player) {
+  if (!playersLookingForMatch[player.id]) { return; }
+  var gameId = playersLookingForMatch[player.id].gameId;
+	this.leave(gameId);
+  console.log(player.name+': Cancelled match making');
+  // remove the player from the playersLookingForMatch array
+	delete playersLookingForMatch[player.id];
+}
 
-// Loop through the sockets and return all the connected players
+
+// Loop through the plugs and return all the connected players
 function getAllPlayers() {
   var players = [];
   Object.keys(io.sockets.connected).forEach(function(socketID){

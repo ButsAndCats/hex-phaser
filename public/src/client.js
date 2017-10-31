@@ -14,6 +14,9 @@ Client.lobbyMessage = function(message) {
 Client.findMatchStart = function() {
   Client.socket.emit('findMatchStart', Player);
 };
+Client.findMatchCancel = function() {
+  Client.socket.emit('findMatchCancel', Player);
+};
 
 // In
 Client.socket.on('playerConnectedToLobby', function(data) {

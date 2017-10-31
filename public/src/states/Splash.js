@@ -38,6 +38,7 @@ Splash.prototype = {
     game.load.image('chat-container', 'assets/images/chat-container.png');
     game.load.spritesheet('send-btn', 'assets/images/send-btn-sheet.png', 95, 40);
     game.load.spritesheet('play-btn', 'assets/images/play-btn-sheet.png', 123, 141);
+    game.load.spritesheet('stop-btn', 'assets/images/stop-btn-sheet.png', 123, 141);
 
     // Login state
     game.load.spritesheet('register-btn', 'assets/images/register-btn.png', 173, 46);
