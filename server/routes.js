@@ -98,7 +98,6 @@ router.post('/login', function (req, res, next) {
       err.status = 401;
       return next(err);
     } else {
-      console.log(user);
       var player = {
         id: user._id,
         name: user.username

@@ -81,6 +81,10 @@ Lobby.prototype = {
     }, this);
     this.playButton.events.onInputUp.add(function() {
       this.playButton.frame = 0;
+      Client.findMatchStart();
+
+      var text = 'Searching for match...'
+      this.postToConsole(text);
     }, this);
 
     // Event listener for the send button
@@ -95,6 +99,8 @@ Lobby.prototype = {
 
     this.sendButton.events.onInputDown.add(this.sendMessage, this);
 
+    var text = Player.name+': Connected to the lobby'
+    this.postToConsole(text);
     // Call this at the end so that everything else has loaded
     Client.playerConnectedToLobby();
   },
@@ -121,7 +127,7 @@ Lobby.prototype = {
 
   sendMessage: function() {
     if (this.chatTextInput.value != '') {
-      var text = 'George: '+this.chatTextInput.value;
+      var text = Player.name+': '+this.chatTextInput.value;
       this.postToConsole(text)
 
       //Send the message to client to handle
@@ -133,13 +139,13 @@ Lobby.prototype = {
     }
   },
 
-  createMessage: function(message) {
-    var text = Player.name+': '+message;
+  createMessage: function(player, message) {
+    var text = player.name+': '+message;
     this.postToConsole(text)
   },
 
-  playerConnected: function() {
-    var text = Player.name+' connected';
+  playerConnected: function(player) {
+    var text = player.name+': Connected to the lobby';
     this.postToConsole(text)
   }
 

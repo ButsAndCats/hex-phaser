@@ -109,7 +109,6 @@ Login.prototype = {
       if (xmlhttp.readyState == XMLHttpRequest.DONE) {
         if (xmlhttp.status == 200) {
           var response = JSON.parse(xmlhttp.response);
-          console.log(response);
           Player.name = response.name;
           Player.id = response.id;
           Client.playerConnected();

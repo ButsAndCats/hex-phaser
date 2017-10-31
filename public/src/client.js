@@ -9,8 +9,10 @@ Client.playerConnectedToLobby = function() {
   Client.socket.emit('playerConnectedToLobby', Player);
 };
 Client.lobbyMessage = function(message) {
-  console.log(message)
-  Client.socket.emit('playerSentLobbyMessage', message)
+  Client.socket.emit('playerSentLobbyMessage', message);
+};
+Client.findMatchStart = function() {
+  Client.socket.emit('findMatchStart', Player);
 };
 
 // In
@@ -21,6 +23,8 @@ Client.socket.on('lobbyAllPlayers', function(players) {
   Lobby.allPlayers(players);
 });
 Client.socket.on('playerSentLobbyMessage', function(player, message) {
-  console.log(message);
-  Lobby.prototype.createMessage(player, message)
+  Lobby.prototype.createMessage(player, message);
 });
+Client.findMatchStarted = function(gameId) {
+  Player.gameId = gameId;
+};
