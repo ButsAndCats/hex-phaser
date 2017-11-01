@@ -8,6 +8,7 @@ var bodyParser = require('body-parser'), // For parsing incoming requests
 // Sockets
 var server = require('http').Server(app),
     io = require('socket.io').listen(server),
+    port = process.env.PORT || 8081,
     plug;
 // Misc
 const uuidv1 = require('uuid/v1'); // Generates unique universal random identifies for game ids.
@@ -48,8 +49,8 @@ app.use('/', routes);
 // Keep track of the last id assigned to a new player
 server.lastPlayderID = 0;
 
-// Listens to port 8081
-server.listen(8081, function() {
+// Listens to port
+server.listen(port, function() {
   console.log('Listening on '+server.address().port);
 });
 
