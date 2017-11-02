@@ -15,7 +15,7 @@ const uuidv1 = require('uuid/v1'); // Generates unique universal random identifi
 const loop = require('node-gameloop'); // Handles server client ticks
 
 // Connect to the database
-mongoose.connect('mongodb://heroku_3w2zhz9l:a08bene0mt45n9dr4jfmmftdlp@ds241895.mlab.com:41895/heroku_3w2zhz9l', {
+mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/hex', {
   useMongoClient: true
 });
 var db = mongoose.connection;
