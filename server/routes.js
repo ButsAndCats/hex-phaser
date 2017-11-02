@@ -15,7 +15,8 @@ router.get('/', function (req, res, next) {
 
 //POST route for registering new users
 router.post('/register', function (req, res, next) {
-
+  console.log('registration recieved');
+  console.log(req);
   // Validate username
   if (req.body.username.length < 3) {
     var err = new Error('Username is too short');
