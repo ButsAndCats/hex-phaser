@@ -16,10 +16,10 @@ router.get('/', function (req, res, next) {
 //POST route for registering new users
 router.post('/register', function (req, res, next) {
   console.log('registration recieved');
-  console.log(req);
   // Validate username
   if (req.body.username.length < 3) {
     var err = new Error('Username is too short');
+    console.log(err);
     err.status = 400;
     res.send('Username is too short');
     return next(err);
@@ -80,6 +80,8 @@ router.post('/register', function (req, res, next) {
       return next(err);
     }
   }
+  console.log('No errors, creating user');
+
   var userData = req.body;
   User.create(userData, function (error, user) {
     if (error) {
@@ -89,6 +91,7 @@ router.post('/register', function (req, res, next) {
       return res.send('Successfully regsitered');
     }
   });
+
 })
 
 //POST route for logging in users
