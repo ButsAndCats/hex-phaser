@@ -114,11 +114,11 @@ function playerConnected(player) {
 }
 
 function playerConnectedToLobby(player) {
+  playersInLobby[player.id] = playersConnected[player.id];
   var confirmedPlayer = {
     name: playersInLobby[player.id].name,
     id: playersInLobby[player.id].id
   }
-  playersInLobby[player.id] = playersConnected[player.id];
   // Return all of the other players in the lobby to the client that just connected
   plug.emit('lobbyAllPlayers', getAllPlayers());
   // send a message to all players excluding the triggerer
