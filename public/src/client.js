@@ -9,7 +9,7 @@ Client.playerConnectedToLobby = function() {
   Client.socket.emit('playerConnectedToLobby', Player);
 };
 Client.lobbyMessage = function(message) {
-  Client.socket.emit('playerSentLobbyMessage', message);
+  Client.socket.emit('playerSentLobbyMessage', Player, message);
 };
 Client.findMatchStart = function() {
   Client.socket.emit('findMatchStart', Player);

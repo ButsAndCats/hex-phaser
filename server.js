@@ -70,32 +70,10 @@ var nowTime = new Date().getTime(),
 
 io.on('connection', function(socket) {
   plug = socket;
-
   // Called from the client when the vistor enters the lobby
-  plug.on('playerConnectedToLobby', function(player) {
-    playersInLobby[player.id] = playersConnected[player.id]
-    // Return all of the other players in the lobby to the client that just connected
-    plug.emit('lobbyAllPlayers', getAllPlayers());
-
-    var confirmedPlayer = {
-      name: playersInLobby[player.id].name,
-      id: playersInLobby[player.id].id
-    }
-    // send a message to all players excluding the triggerer
-    plug.broadcast.emit('playerConnectedToLobby', confirmedPlayer);
-    // log the player to the terminal
-    console.log(playersConnected[player.id].name+' connected to the lobby');
-
-    // Listen for players sending messages to the lobby
-    plug.on('playerSentLobbyMessage', function(message) {
-      // Send the message to all the connected plugs
-      plug.broadcast.emit('playerSentLobbyMessage', confirmedPlayer, message);
-      // Log the message and player to the terminal
-      console.log(confirmedPlayer.name)
-      console.log(message)
-
-    });
-  });
+  plug.on('playerConnectedToLobby', playerConnectedToLobby);
+  // Listen for players sending messages to the lobby
+  plug.on('playerSentLobbyMessage', playerSentLobbyMessage);
   // Called from the client side when the user has been authenticated
   plug.on('playerConnected', playerConnected);
   // Called when the client starts finding a match
@@ -133,6 +111,32 @@ function playerConnected(player) {
   // Keeping track of the connected players
   playersConnected[player.id] = player;
   // console.log(playersConnected);
+}
+
+function playerConnectedToLobby(player) {
+  var confirmedPlayer = {
+    name: playersInLobby[player.id].name,
+    id: playersInLobby[player.id].id
+  }
+  playersInLobby[player.id] = playersConnected[player.id];
+  // Return all of the other players in the lobby to the client that just connected
+  plug.emit('lobbyAllPlayers', getAllPlayers());
+  // send a message to all players excluding the triggerer
+  plug.broadcast.emit('playerConnectedToLobby', confirmedPlayer);
+  // log the player to the terminal
+  console.log(playersConnected[player.id].name+' connected to the lobby');
+}
+
+function playerSentLobbyMessage(player, message) {
+  var confirmedPlayer = {
+    name: playersInLobby[player.id].name,
+    id: playersInLobby[player.id].id
+  }
+  // Send the message to all the connected plugs
+  plug.broadcast.emit('playerSentLobbyMessage', confirmedPlayer, message);
+  // Log the message and player to the terminal
+  console.log(confirmedPlayer.name)
+  console.log(message)
 }
 
 function findMatchStart(player) {
