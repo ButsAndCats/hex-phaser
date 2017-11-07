@@ -67,7 +67,7 @@ Splash.prototype = {
     this.loadScripts();
     this.loadImages();
     this.loadFonts();
-    this.loadSounds();
+    // this.loadSounds();
   },
 
   addGameStates: function () {

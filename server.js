@@ -128,6 +128,7 @@ function playerConnectedToLobby(player) {
 }
 
 function playerSentLobbyMessage(player, message) {
+  console.log(plug)
   console.log(player)
   var confirmedPlayer = {
     name: playersInLobby[player.id].name,
