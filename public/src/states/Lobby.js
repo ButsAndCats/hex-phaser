@@ -138,8 +138,8 @@ Lobby.prototype = {
     // Scroll down (x,y)
     // console.log(((messageCount) * 30))
     // console.log(messageContainer)
-
-    messageContainer.scrollTo(70, 270, 500, false);
+    var scrollY = ((messageCount) * 30) >= 210 ? -30 : 0;
+    messageContainer.scrollY(scrollY);
 
     // add to count
     messageCount++;
