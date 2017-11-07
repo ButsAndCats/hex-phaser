@@ -130,13 +130,13 @@ function playerConnectedToLobby(player) {
 function playerSentLobbyMessage(player, message) {
   var confirmedPlayer = {
     name: playersInLobby[player.id].name,
-    id: playersInLobby[player.id].id
+    id: playersInLobby[player.id].id,
+    message: message
   }
   // Send the message to all the connected plugs
-  plug.broadcast.emit('playerSentLobbyMessage', confirmedPlayer, message);
+  plug.broadcast.emit('playerSentLobbyMessage', confirmedPlayer);
   // Log the message and player to the terminal
-  console.log(confirmedPlayer.name)
-  console.log(message)
+  console.log(confirmedPlayer);
 }
 
 function findMatchStart(player) {

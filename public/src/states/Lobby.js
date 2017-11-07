@@ -159,14 +159,14 @@ Lobby.prototype = {
     }
   },
 
-  createMessage: function(player, message) {
-    var text = player.name+': '+message;
-    this.postToConsole(text)
+  createMessage: function(message) {
+    var text = message.name+': '+message.message;
+    this.postToConsole(text);
   },
 
   playerConnected: function(player) {
     var text = player.name+': Connected to the lobby';
-    this.postToConsole(text)
+    this.postToConsole(text);
   }
 
 }

@@ -25,9 +25,9 @@ Client.socket.on('playerConnectedToLobby', function(data) {
 Client.socket.on('lobbyAllPlayers', function(players) {
   Lobby.allPlayers(players);
 });
-Client.socket.on('playerSentLobbyMessage', function(player, message) {
-  console.log(player);
-  Lobby.prototype.createMessage(player, message);
+Client.socket.on('playerSentLobbyMessage', function(message) {
+  console.log(message);
+  Lobby.prototype.createMessage(message);
 });
 Client.findMatchStarted = function(gameId) {
   Player.gameId = gameId;
