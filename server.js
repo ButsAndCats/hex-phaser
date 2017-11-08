@@ -78,6 +78,8 @@ io.on('connection', function(socket) {
   socket.on('findMatchStart', findMatchStart);
   // Called when the client cancels finding a match
   socket.on('findMatchCancel', findMatchCancel);
+  // Called when a guest is requesting to connect with a host
+  socket.on('joinHostGame', joinHostGame);
 
   function playerConnected(player) {
     console.log(player.name+ ' connected');
@@ -124,7 +126,6 @@ io.on('connection', function(socket) {
     }
 
     player = playersConnected[player.id];
-    // console.log(playersConnected)
 
     // send back the id of the game that has been created and add the id to the players local state
     socket.emit('findMatchStarted', { gameId: gameId });
@@ -142,7 +143,7 @@ io.on('connection', function(socket) {
       socket: socket.id
     }
 
-    console.log(player.name +' joined game:'+gameId+' | find match start');
+    console.log(player.name +' created game:'+gameId+' | find match start');
   }
 
   function findMatchCancel(player) {
@@ -152,6 +153,53 @@ io.on('connection', function(socket) {
     console.log(player.name+': Cancelled match making');
     // remove the player from the playersLookingForMatch array
   	delete playersLookingForMatch[player.id];
+  }
+
+  function joinHostGame(data) {
+    let gameId = data.gameId;
+	      playerId = data.playerId,
+        match = gamesInProgress[gameId],
+	      guest = playersWaitingForMatch[playerId],
+        min = 0,
+        max = 999999;
+
+    // This socket will now join this game 'room'
+    this.join(gameId);
+
+    guest.guest = true;
+
+    match.players[playerId] = guest;
+    match.playerIds.push(playerId);
+    match.joinedPlayers += 1;
+
+    console.log(playerId + ' joined host game | ' + gameId);
+
+    if(match.joinedPlayers === match.maxPlayers) {
+      // create a quick random test to determine which player goes first (in a turn-based game)
+  		var coinFlip = Math.floor(Math.random() * (max - min + 1)) + min;
+  		var hostId = match.playerIds[0];
+  		var guestId = match.playerIds[1];
+
+  		match.players[hostId].goesFirst = true;
+  		match.players[guestId].goesFirst = false;
+
+  		if (coinFlip < 500000) {
+    		match.players[hostId].goesFirst = false;
+    		match.players[guestId].goesFirst = true;
+  		}
+
+
+  		// Save the game back to the database. This is critical because we need to detect
+  		// if there is a game in progress if either client reloads their browser page.
+  		saveGameInProgress(gameId, match);
+
+  		// alert both clients that the game is ready to start
+  		matchBeginGame(gameId, match);
+
+  		// the match is fully completed on the server, so remove the players from waitingOnMatch array
+  		delete playersWaitingForMatch[hostId];
+  		delete playersWaitingForMatch[guestId];
+    }
   }
 
 });
@@ -175,6 +223,13 @@ function serverLoop(frame, delta) {
 	if (playersLookingForMatch != {}) {
 		findMatchLoop();
 	}
+}
+
+// helper function to save or update the game to the database
+function saveGameInProgress(gameId, match) {
+	gamesInProgress[gameId] = match;
+
+  /* TODO: track 1000 game histories in db */
 }
 
 // Handle players that are looking for a match
@@ -224,7 +279,7 @@ function matchFound(host, guest) {
   host.host = true;
 
 	// emit the event to the guest player that tells the client to join the host player's game
-	io.to(guest.socket).emit('matchJoinGame', { gameId: gameId });
+	io.to(guest.socket).emit('hostGameFound', gameId);
 
   console.log(guest.player.id + ': sending notice to join game | ' + gameId);
 

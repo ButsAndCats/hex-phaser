@@ -29,6 +29,14 @@ Client.socket.on('playerSentLobbyMessage', function(message) {
   console.log(message);
   Lobby.prototype.createMessage(message);
 });
-Client.findMatchStarted = function(gameId) {
+Client.socket.on('findMatchStarted', function(gameId) {
   Player.gameId = gameId;
-};
+  console.log('Match started');
+  console.log(gameId);
+
+});
+Client.socket.on('hostGameFound', function(gameId) {
+  console.log('hostGameFound');
+  console.log(gameId);
+  this.socket.emit('joinHostGame', { gameId: gameId, playerId: Player.id });
+});
