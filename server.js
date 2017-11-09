@@ -232,6 +232,12 @@ function saveGameInProgress(gameId, match) {
   /* TODO: track 1000 game histories in db */
 }
 
+// alert both clients that the game is ready to start
+function matchBeginGame(gameId, match) {
+	// emit the begin game event to both clients
+	io.to(gameId).emit('beginMatch', { match: match });
+}
+
 // Handle players that are looking for a match
 function findMatchLoop() {
   // Loop through all players looking for a match

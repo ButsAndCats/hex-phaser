@@ -38,5 +38,10 @@ Client.socket.on('findMatchStarted', function(gameId) {
 Client.socket.on('hostGameFound', function(gameId) {
   console.log('hostGameFound');
   console.log(gameId);
-  this.socket.emit('joinHostGame', { gameId: gameId, playerId: Player.id });
+  Client.socket.emit('joinHostGame', { gameId: gameId, playerId: Player.id });
+});
+Client.socket.on('beginMatch', function(gameId) {
+  console.log('begin match');
+  console.log(gameId);
+  game.state.start("Game");
 });
