@@ -48,7 +48,7 @@ Tile.prototype.rollOver = function() {
 // Console log the tile that we have clicked on
 Tile.prototype.upClick = function() {
   if(this.marked) {
-    unHighlightMoves();
-    moveToCoordinates([this.i, this.j, this.k]);
+    Game.prototype.unHighlightMoves();
+    Game.prototype.moveToCoordinates([this.i, this.j, this.k]);
   }
 };

@@ -40,8 +40,8 @@ Client.socket.on('hostGameFound', function(gameId) {
   console.log(gameId);
   Client.socket.emit('joinHostGame', { gameId: gameId, playerId: Player.id });
 });
-Client.socket.on('beginMatch', function(gameId) {
+Client.socket.on('beginMatch', function(match) {
   console.log('begin match');
-  console.log(gameId);
+  Match = match;
   game.state.start("Game");
 });

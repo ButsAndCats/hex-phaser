@@ -39,5 +39,5 @@ Arrow.prototype.upClick = function() {
   // Hide the arrows
   directionalArrows.visible = false;
   // Change the player direction
-  changeDirection(players[playerTurn], this.direction);
+  Game.prototype.changeDirection(players[playerTurn], this.direction);
 };

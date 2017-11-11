@@ -1,3 +1,11 @@
+/*
+TODO:
+Create interface and disablement manager
+Create non-traversable edged tiles
+Create tile spritesheet
+Update opponents view with sockets
+*/
+
 var Game = function(game) {};
 var key = {
   1: 'tile-grass',
@@ -55,30 +63,37 @@ Game.prototype = {
 
   create: function () {
 
-    // set the background of the canvas to dracula bg
-    game.stage.backgroundColor = '#282a36';
     if (debug) {
       debugGroup = game.add.group();
     }
+
+    console.log(Match.players)
+    for (var id in Match.players) {
+      if (Match.players.hasOwnProperty(id)) {
+        console.log(Match.players[id])
+        if(Match.players[id].goesFirst === true) {
+          players[1].name = Match.players[id].player.name;
+          players[1].socket = Match.players[id].player.socket;
+          players[1].id = Match.players[id].player.id;
+        } else {
+          players[2].name = Match.players[id].player.name;
+          players[2].socket = Match.players[id].player.socket;
+          players[2].id = Match.players[id].player.id;
+        }
+      }
+    }
+
     // execute create level function
     createMap();
     addPlayers();
     createInterface();
-    start();
+    this.start();
+
     if (debug) {
       game.world.bringToTop(debugGroup);
       debugGroup.position.x = tileWidth/2;
       debugGroup.position.y = tileHeight/2;
       console.log(debugGroup)
-    }
-
-    function getKeyByValue(obj, value) {
-      for(var prop in obj) {
-        if(obj.hasOwnProperty(prop)) {
-          if(obj[prop] === value)
-            return prop;
-        }
-      }
     }
 
     function createMap() {
@@ -156,7 +171,7 @@ Game.prototype = {
     }
 
     function createInterface() {
-      turnText = game.add.text(0, 0, "Player "+playerTurn+"'s turn", {
+      turnText = game.add.text(0, 0, players[playerTurn].name+"'s turn", {
             font: "16px Menlo",
             fill: "#8be9fd"
       });
@@ -206,233 +221,245 @@ Game.prototype = {
     //     }
     //   }
     // }
-    function getInFront(location, direction, distance, includingLocation) {
-      includingLocation = includingLocation || false;
-      var coords = [],
-          loc = [location.i, location.j, location.k],
-          directions = {
-            1: [0, 1, -1],
-            2: [1, 0, -1],
-            3: [1, -1, 0],
-            4: [0, -1, -1],
-            5: [-1, -1, -1],
-            6: [-1, 1, 0]
-          },
-          dir = directions[direction];
-      includingLocation ? coords[0] = loc : coords = [];
 
-      for (var a = 1; a < distance+1; a++) {
-        function nextTile() {
-          var temp = [];
-          for (var b = 0; b < dir.length; b++) {
-            temp[b] = (loc[b] + (dir[b]*a));
-            // console.log(''+loc[b]+' + '+dir[b]+' = '+ temp[b]);
-          }
-          return temp
-        }
-        coords.push(nextTile());
+  },
+
+  start: function() {
+    this.displayAvailableDirections(players[playerTurn]);
+  },
+
+  getKeyByValue: function(obj, value) {
+    for(var prop in obj) {
+      if(obj.hasOwnProperty(prop)) {
+        if(obj[prop] === value)
+          return prop;
       }
-      return coords;
+    }
+  },
+
+  displayAvailableDirections: function(player) {
+
+    /*
+      Directions are numerical starting at the right going Anti-clockwise
+         5 / \ 6
+        4 |   | 1
+         3 \ / 2
+    */
+
+    var availableDirections = [];
+    var tempDirection;
+
+    currentDirection = player.location.direction;
+    availableDirections.push(currentDirection);
+
+    for (var v = 1; v < player.speed+1; v++) {
+      // Turning Clockwise
+      tempDirection = currentDirection + v;
+      if(tempDirection > 6) tempDirection = tempDirection - 6;
+      availableDirections.push(tempDirection);
+
+      // Turning Anti-clockwise
+      tempDirection = currentDirection - v;
+      if(tempDirection < 1) tempDirection = tempDirection + 6;
+      availableDirections.push(tempDirection);
     }
 
-    function getNeighbours(location) {
-      // i and j refer to the grid coordinates
-      var neighbours = [];
-      var tempArray = [];
-      var tempi = location.i;
-      var tempj = location.j;
-      var newi;
-      var newj;
-      // The differences they have in common are:
-      // [0, +1], [+1, 0], [0, -1], [-1, 0]
-      var commonChanges = [
-        [0, 1],
-        [1, 0],
-        [0, -1],
-        [-1, 0]
-      ];
-      var evenChanges = [
-        [1, 1],
-        [-1, 1]
-      ];
-      var oddChanges = [
-        [1, -1],
-        [-1,-1]
-      ];
+    directionalArrows.x = player.location.x - (tileWidth/2);
+    directionalArrows.y = player.location.y - (tileHeight/2);
+    directionalArrows.visible = true;
+
+    for (var g = 0; g < availableDirections.length; g++) {
+      var arrowIndex = availableDirections[g];
+      arrowsArray[arrowIndex-1].visible = true;
+    }
+
+    // Make the available diretions visible
+    directionalArrows.visible = true;
+    // display the direction with an arrow or with some other ui element
+
+    // once the user selects a direction update the player sprite to face in that direction and update the player object
+  },
 
 
-      // Loop through the common changes
-      for (var i = 0; i < commonChanges.length; i++) {
+  highlightMoves: function(coords) {
+    console.log(coords)
+    highlightedCoords = coords;
+    // TODO: Add detection for if the tile is traversable
+    for (var i = 0; i < coords.length; i++) {
+      var tempTile = grid.getByName('tile'+coords[i][0]+'_'+coords[i][1]+'_'+coords[i][2]);
+      if(tempTile) {
+        tempTile.tint = 0x8BE9FD;
+        tempTile.marked = true;
+      }
+    }
+  },
+
+  displayAvailableMoves: function(player) {
+                      // grid coords, direction, distance, including location
+    var moves = this.getInFront(player.location, player.location.direction, player.speed, true);
+    this.highlightMoves(moves);
+  },
+
+  changeDirection: function(player, direction) {
+    console.log(player)
+    // Turn the player
+    player.location.direction = direction;
+    player.sprite.frame = (direction*6)-2;
+    // update interface text
+    phaseText.setText("Choose move");
+    // highlight and make active avilable moves
+    this.displayAvailableMoves(player);
+  },
+
+  distanceBetweenTwoPoints: function(one, two) {
+    console.log(one)
+    console.log(two)
+    return Math.sqrt((Math.pow(two.i - one.i, 2)) + (Math.pow(two.j - one.j, 2)));
+  },
+
+  moveToCoordinates: function(coords) {
+    var _this = this;
+    var destination = grid.getByName('tile'+coords[0]+'_'+coords[1]+'_'+coords[2]);
+    var direction = players[playerTurn].location.direction;
+    var distance = this.distanceBetweenTwoPoints(players[playerTurn].location, destination);
+    var startCallback = function() {
+      players[playerTurn].sprite.animations.play('walk'+direction, 12, true);
+    };
+    var completeCallback = function() {
+      players[playerTurn].sprite.animations.stop()
+      players[playerTurn].sprite.frame = (direction*6)-2;
+      _this.pickMana();
+    };
+
+    console.log(distance)
+
+    // Start the walking animation
+
+    if(distance > 0) {
+      // define the tween to the                                                   //multiply the distance by 600 so the speed is the same to any desination
+      var tween = game.add.tween(players[playerTurn].sprite).to( { x: destination.x, y: destination.y }, 600*distance, null, true);
+      // add the callbacks
+      tween.onStart.add(startCallback, this)
+      tween.onComplete.add(completeCallback, this);
+    } else {
+      this.pickMana();
+    }
+  },
+
+  unHighlightMoves: function() {
+    var coords = highlightedCoords;
+    for (var i = 0; i < coords.length; i++) {
+      var tempTile = grid.getByName('tile'+coords[i][0]+'_'+coords[i][1]+'_'+coords[i][2]);
+      if(tempTile) {
+        tempTile.tint = 0xFFFFFF;
+        tempTile.marked = false;
+      }
+    }
+    highlightedCoords = [];
+  },
+
+  getNeighbours: function(location) {
+    // i and j refer to the grid coordinates
+    var neighbours = [];
+    var tempArray = [];
+    var tempi = location.i;
+    var tempj = location.j;
+    var newi;
+    var newj;
+    // The differences they have in common are:
+    // [0, +1], [+1, 0], [0, -1], [-1, 0]
+    var commonChanges = [
+      [0, 1],
+      [1, 0],
+      [0, -1],
+      [-1, 0]
+    ];
+    var evenChanges = [
+      [1, 1],
+      [-1, 1]
+    ];
+    var oddChanges = [
+      [1, -1],
+      [-1,-1]
+    ];
+
+
+    // Loop through the common changes
+    for (var i = 0; i < commonChanges.length; i++) {
+      // Empty the temporary array
+      tempArray = [];
+      // capture the changes
+      newi = tempi + commonChanges[i][0];
+      newj = tempj + commonChanges[i][1];
+      // Push the new coords
+      tempArray.push(newi, newj);
+      // push the coords array
+      neighbours.push(tempArray);
+    }
+
+
+    if((location.i % 2) === 0) {
+      // i co-ordinate is even
+      for (var i = 0; i < evenChanges.length; i++) {
         // Empty the temporary array
         tempArray = [];
-        // capture the changes
-        newi = tempi + commonChanges[i][0];
-        newj = tempj + commonChanges[i][1];
+        // capture the even changes
+        newi = tempi + evenChanges[i][0];
+        newj = tempj + evenChanges[i][1];
         // Push the new coords
         tempArray.push(newi, newj);
         // push the coords array
         neighbours.push(tempArray);
       }
-
-
-      if((location.i % 2) === 0) {
-        // i co-ordinate is even
-        for (var i = 0; i < evenChanges.length; i++) {
-          // Empty the temporary array
-          tempArray = [];
-          // capture the even changes
-          newi = tempi + evenChanges[i][0];
-          newj = tempj + evenChanges[i][1];
-          // Push the new coords
-          tempArray.push(newi, newj);
-          // push the coords array
-          neighbours.push(tempArray);
-        }
-      } else {
-        // i co-ordinate is odd
-        for (var i = 0; i < oddChanges.length; i++) {
-          // Empty the temporary array
-          tempArray = [];
-          // capture the even changes
-          newi = tempi + oddChanges[i][0];
-          newj = tempj + oddChanges[i][1];
-          // Push the new coords
-          tempArray.push(newi, newj);
-          // push the coords array
-          neighbours.push(tempArray);
-        }
-      }
-
-      return neighbours;
-    }
-
-
-    function displayAvailableDirections(player) {
-
-      /*
-        Directions are numerical starting at the right going Anti-clockwise
-           5 / \ 6
-          4 |   | 1
-           3 \ / 2
-      */
-
-      var availableDirections = [];
-      var tempDirection;
-
-      currentDirection = player.location.direction;
-      availableDirections.push(currentDirection);
-
-      for (var v = 1; v < player.speed+1; v++) {
-        // Turning Clockwise
-        tempDirection = currentDirection + v;
-        if(tempDirection > 6) tempDirection = tempDirection - 6;
-        availableDirections.push(tempDirection);
-
-        // Turning Anti-clockwise
-        tempDirection = currentDirection - v;
-        if(tempDirection < 1) tempDirection = tempDirection + 6;
-        availableDirections.push(tempDirection);
-      }
-
-      directionalArrows.x = player.location.x - (tileWidth/2);
-      directionalArrows.y = player.location.y - (tileHeight/2);
-      directionalArrows.visible = true;
-
-      for (var g = 0; g < availableDirections.length; g++) {
-        var arrowIndex = availableDirections[g];
-        arrowsArray[arrowIndex-1].visible = true;
-      }
-
-      // Make the available diretions visible
-      directionalArrows.visible = true;
-      // display the direction with an arrow or with some other ui element
-
-      // once the user selects a direction update the player sprite to face in that direction and update the player object
-    }
-
-    function highlightMoves(coords) {
-      console.log(coords)
-      highlightedCoords = coords;
-      // TODO: Add detection for if the tile is traversable
-      for (var i = 0; i < coords.length; i++) {
-        var tempTile = grid.getByName('tile'+coords[i][0]+'_'+coords[i][1]+'_'+coords[i][2]);
-        if(tempTile) {
-          tempTile.tint = 0x8BE9FD;
-          tempTile.marked = true;
-        }
+    } else {
+      // i co-ordinate is odd
+      for (var i = 0; i < oddChanges.length; i++) {
+        // Empty the temporary array
+        tempArray = [];
+        // capture the even changes
+        newi = tempi + oddChanges[i][0];
+        newj = tempj + oddChanges[i][1];
+        // Push the new coords
+        tempArray.push(newi, newj);
+        // push the coords array
+        neighbours.push(tempArray);
       }
     }
 
-    function unHighlightMoves() {
-      var coords = highlightedCoords;
-      for (var i = 0; i < coords.length; i++) {
-        var tempTile = grid.getByName('tile'+coords[i][0]+'_'+coords[i][1]+'_'+coords[i][2]);
-        if(tempTile) {
-          tempTile.tint = 0xFFFFFF;
-          tempTile.marked = false;
-        }
+    return neighbours;
+  },
+
+  getInFront: function(location, direction, distance, includingLocation) {
+    includingLocation = includingLocation || false;
+    var coords = [],
+        loc = [location.i, location.j, location.k],
+        directions = {
+          1: [0, 1, -1],
+          2: [1, 0, -1],
+          3: [1, -1, 0],
+          4: [0, -1, -1],
+          5: [-1, -1, -1],
+          6: [-1, 1, 0]
+        },
+        dir = directions[direction];
+    includingLocation ? coords[0] = loc : coords = [];
+
+    function nextTile(a) {
+      var temp = [];
+      for (var b = 0; b < dir.length; b++) {
+        temp[b] = (loc[b] + (dir[b]*a));
+        // console.log(''+loc[b]+' + '+dir[b]+' = '+ temp[b]);
       }
-      highlightedCoords = [];
+      return temp
     }
 
-    function distanceBetweenTwoPoints(one, two) {
-      console.log(one)
-      console.log(two)
-      return Math.sqrt((Math.pow(two.i - one.i, 2)) + (Math.pow(two.j - one.j, 2)));
+    for (var a = 1; a < distance+1; a++) {
+      coords.push(nextTile(a));
     }
+    return coords;
+  },
 
-    function moveToCoordinates(coords) {
-      var destination = grid.getByName('tile'+coords[0]+'_'+coords[1]+'_'+coords[2]);
-      var direction = players[playerTurn].location.direction;
-      var distance = distanceBetweenTwoPoints(players[playerTurn].location, destination);
-      var startCallback = function() {
-        players[playerTurn].sprite.animations.play('walk'+direction, 12, true);
-      };
-      var completeCallback = function() {
-        players[playerTurn].sprite.animations.stop()
-        players[playerTurn].sprite.frame = (direction*6)-2;
-        pickMana();
-      };
-
-      console.log(distance)
-
-      // Start the walking animation
-
-      if(distance > 0) {
-        // define the tween to the                                                   //multiply the distance by 600 so the speed is the same to any desination
-        var tween = game.add.tween(players[playerTurn].sprite).to( { x: destination.x, y: destination.y }, 600*distance, null, true);
-        // add the callbacks
-        tween.onStart.add(startCallback, this)
-        tween.onComplete.add(completeCallback, this);
-      } else {
-        pickMana();
-      }
-    }
-
-    function displayAvailableMoves(player) {
-                        // grid coords, direction, distance, including location
-      var moves = getInFront(player.location, player.location.direction, player.speed, true);
-      highlightMoves(moves);
-    }
-
-    function changeDirection(player, direction) {
-      console.log(player)
-      // Turn the player
-      player.location.direction = direction;
-      player.sprite.frame = (direction*6)-2;
-      // update interface text
-      phaseText.setText("Choose move");
-      // highlight and make active avilable moves
-      displayAvailableMoves(player);
-    }
-
-    function pickMana() {
-      phaseText.setText("Pick mana");
-    }
-
-    function start() {
-      displayAvailableDirections(players[playerTurn]);
-    }
-
+  pickMana: function() {
+    phaseText.setText("Pick mana");
   }
 };

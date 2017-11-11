@@ -234,8 +234,9 @@ function saveGameInProgress(gameId, match) {
 
 // alert both clients that the game is ready to start
 function matchBeginGame(gameId, match) {
+  console.log(match)
 	// emit the begin game event to both clients
-	io.to(gameId).emit('beginMatch', { match: match });
+	io.to(gameId).emit('beginMatch', match);
 }
 
 // Handle players that are looking for a match

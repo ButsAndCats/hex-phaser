@@ -8,7 +8,7 @@ Splash.prototype = {
     game.load.script('phaser-scollable', 'lib/phaser-scrollable.min.js')
     // Classes
     game.load.script('tile',  'src/classes/Tile.js');
-    game.load.script('splash',  'src/classes/Arrow.js');
+    game.load.script('arrow',  'src/classes/Arrow.js');
     // States
     game.load.script('login','src/states/Login.js');
     game.load.script('register','src/states/Register.js');
