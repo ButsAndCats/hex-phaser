@@ -1,20 +1,23 @@
-//  Here is a custom game object
-Tile = function (game, x, y, tileImage, isVertical, i, j, k, type) {
+//  Here is a custom game object that represents a hexagonal tile
+Tile = function (game, x, y, tileFrame, isVertical, i, j, k, type) {
 
-  Phaser.Sprite.call(this, game, x, y, tileImage);
+  Phaser.Sprite.call(this, game, x, y, 'tile-sheet', tileFrame);
+  console.log(tileFrame)
   this.anchor.setTo(0.5, 0.5);
+
+  this.verticalOffset = 24;
 
   if(i === 6 && j === -3) players[1].location = {
     'x': x,
-    'y': y,
+    'y': y-(this.verticalOffset/2),
     'i': i,
     'j': j,
     'k': k,
     'direction': 1
   }
-  if(i === 6 && j === 9) players[2].location = {
+  if(i === 6 && j === 8) players[2].location = {
     'x': x,
-    'y': y,
+    'y': y-(this.verticalOffset/2),
     'i': i,
     'j': j,
     'k': k,
@@ -42,7 +45,7 @@ Tile.prototype.constructor = Tile;
 // display border frame sprite on mouse over
 Tile.prototype.rollOver = function() {
   tileMouseOver.x = this.x;
-  tileMouseOver.y = this.y;
+  tileMouseOver.y = this.y-(tileVOffset/2);
   tileMouseOver.visible = true;
 };
 // Console log the tile that we have clicked on
@@ -50,5 +53,7 @@ Tile.prototype.upClick = function() {
   if(this.marked) {
     Game.prototype.unHighlightMoves();
     Game.prototype.moveToCoordinates([this.i, this.j, this.k]);
+  } else {
+    console.log(this)
   }
 };

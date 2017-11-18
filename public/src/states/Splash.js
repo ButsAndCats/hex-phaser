@@ -24,13 +24,12 @@ Splash.prototype = {
 
   loadImages: function () {
     // Game state
-    game.load.image('tile', 'assets/images/tile.png');
-    game.load.image('tile-grass', 'assets/images/tile-grass.png');
-    game.load.image('tile-stone', 'assets/images/tile-stone.png');
-    game.load.image('interface-mouseover-tile', 'assets/images/interface-mouseover-tile.png');
     game.load.image('interface-mouseover-tile', 'assets/images/interface-mouseover-tile.png');
     game.load.spritesheet('interface-direction-arrow', 'assets/images/interface-direction-arrow.png', 16, 16);
+    game.load.spritesheet('interface-soul-stones', 'assets/images/interface-soul-stone-sheet.png', 64, 64);
     game.load.spritesheet('player', 'assets/images/player.png', 32, 32);
+    game.load.spritesheet('tile-sheet', 'assets/images/tile-sheet.png', 65, 89);
+    game.load.spritesheet('orbs', 'assets/images/orbs.png', 24, 24);
 
     // Lobby state
     game.load.image('chat-input', 'assets/images/chat-input.png');

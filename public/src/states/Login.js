@@ -9,6 +9,11 @@ var Login = function () {};
 
 Login.prototype = {
   init: function() {
+    this.demoLink = game.make.text(0, 0, 'play demo', {
+      font: '17px Futura',
+      fill: '#54442F'
+    });
+
     // create images
     this.logo = game.make.sprite(game.world.centerX, 190, 'logo');
     this.loginButton = game.make.sprite(game.world.centerX , (game.world.centerY+70), 'login-btn');
@@ -89,6 +94,13 @@ Login.prototype = {
 
   },
   create: function() {
+    game.add.existing(this.demoLink);
+    this.demoLink.inputEnabled = true;
+    this.demoLink.events.onInputUp.add(function() {
+      game.state.start("Game");
+    });
+
+
     this.usernameText = game.add.nineSlice((game.world.centerX - (350/2)), game.world.centerY-50, 'login-input', null, 350, 50);
     this.passwordText = game.add.nineSlice((game.world.centerX - (350/2)), (game.world.centerY+10), 'login-input', null, 350, 50);
 

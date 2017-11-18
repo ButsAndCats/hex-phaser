@@ -81,6 +81,11 @@ io.on('connection', function(socket) {
   // Called when a guest is requesting to connect with a host
   socket.on('joinHostGame', joinHostGame);
 
+
+  // Game based event
+  // Called when a player chooses a direction
+  socket.on('playerChangedDirection', playerChangedDirection);
+
   function playerConnected(player) {
     console.log(player.name+ ' connected');
 
@@ -200,6 +205,13 @@ io.on('connection', function(socket) {
   		delete playersWaitingForMatch[hostId];
   		delete playersWaitingForMatch[guestId];
     }
+  }
+
+  function playerChangedDirection(player, match, direction) {
+    console.log(player);
+    console.log(match);
+    console.log(direction);
+    io.to(match.gameId).emit('playerChangedDirection', player, match, direction);
   }
 
 });

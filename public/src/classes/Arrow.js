@@ -38,6 +38,8 @@ Arrow.prototype.rollOver = function(){
 Arrow.prototype.upClick = function() {
   // Hide the arrows
   directionalArrows.visible = false;
-  // Change the player direction
+  // Send socket event
+  Client.playerChangedDirection(players[playerTurn], this.direction);
+  // Change the player directionr
   Game.prototype.changeDirection(players[playerTurn], this.direction);
 };

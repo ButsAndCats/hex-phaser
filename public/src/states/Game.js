@@ -7,25 +7,21 @@ Update opponents view with sockets
 */
 
 var Game = function(game) {};
-var key = {
-  1: 'tile-grass',
-  2: 'tile-stone'
-}
 // Game map 0 = EMPTY, 1 Grass, 2 Stone
 var tileMap = [
-  [0,0,0,1,1,1,1,1,1,1,0,0,0],
-  [0,0,1,1,1,1,1,1,1,1,0,0,0],
-  [0,0,1,1,1,1,1,1,1,1,1,0,0],
-  [0,1,1,1,1,1,1,1,1,1,1,0,0],
-  [0,1,1,1,1,1,1,1,1,1,1,1,0],
-  [1,1,1,1,1,1,1,1,1,1,1,1,0],
-  [2,1,1,1,1,1,1,1,1,1,1,1,2],
-  [1,1,1,1,1,1,1,1,1,1,1,1,0],
-  [0,1,1,1,1,1,1,1,1,1,1,1,0],
-  [0,1,1,1,1,1,1,1,1,1,1,0,0],
-  [0,0,1,1,1,1,1,1,1,1,1,0,0],
-  [0,0,1,1,1,1,1,1,1,1,0,0,0],
-  [0,0,0,1,1,1,1,1,1,1,0,0,0]
+  [0,0,0,1,1,1,1,1,1,0,0,0],
+  [0,0,1,1,1,1,1,1,1,0,0,0],
+  [0,0,1,1,1,1,1,1,1,1,0,0],
+  [0,1,1,1,1,1,1,1,1,1,0,0],
+  [0,1,1,1,1,1,1,1,1,1,1,0],
+  [1,1,1,1,1,1,1,1,1,1,1,0],
+  [2,1,1,1,1,1,1,1,1,1,1,2],
+  [1,1,1,1,1,1,1,1,1,1,1,0],
+  [0,1,1,1,1,1,1,1,1,1,1,0],
+  [0,1,1,1,1,1,1,1,1,1,0,0],
+  [0,0,1,1,1,1,1,1,1,1,0,0],
+  [0,0,1,1,1,1,1,1,1,0,0,0],
+  [0,0,0,1,1,1,1,1,1,0,0,0]
 ];
 
 var bmpText,
@@ -35,6 +31,9 @@ var bmpText,
     highlightedCoords,
     directionalArrows,
     arrowsArray = [],
+    soulstones = {},
+    orbs = {},
+    stoneColours = ["red", "yellow", "green", "cyan", "blue", "magenta"],
     players = {
       1: {
         number: 1,
@@ -50,8 +49,9 @@ var bmpText,
       }
     }
     debug = false,
-    tileHeight = 61,
-    tileWidth = 52,
+    tileHeight = 65,
+    tileWidth = 65,
+    tileVOffset = 24,
     playerSpriteSize = 32,
     playerTurn = 1;
 
@@ -59,6 +59,7 @@ Game.prototype = {
 
   preload: function () {
     this.optionCount = 1;
+    game.load.nineSlice('ui-bar', 'assets/images/interface-bar-nine-slice.png', 25);
   },
 
   create: function () {
@@ -100,8 +101,8 @@ Game.prototype = {
       // grid is now an object of game objects
       grid = game.add.group();
       // Set the coordinates of the grid group
-      grid.x = 50;
-      grid.y = 50;
+      grid.x = 0;
+      grid.y = 12;
       // Variables we will use to layout the tiles in the grid
       var verticalOffset = tileHeight*3/4,
           horizontalOffset = tileWidth,
@@ -120,7 +121,7 @@ Game.prototype = {
         startY = startYInit+(i*verticalOffset);
 
         // Loop through each of the values in our row arrays
-        for (var j = 0; j < tileMap[0].length; j++) {
+        for (var j = 0; j < tileMap[i].length; j++) {
           // Axial co-ordinate conversion
           var cubicI = i;
           var cubicJ = j - (Math.floor(i/2));
@@ -136,7 +137,7 @@ Game.prototype = {
           // if tileMap [row] [column] does equal 1
           if(tileMap[i][j] != 0){
             // construct a new time to our game at the location that we have just calculated using our custom game pbject from tile.js
-            tile = new Tile(game, startX, startY, key[tileMap[i][j]], false, cubicI, cubicJ, cubicK, tileMap[i][j]);
+            tile = new Tile(game, startX, startY, (tileMap[i][j]-1), false, cubicI, cubicJ, cubicK, tileMap[i][j]-1);
             // Add the new tile to our grid group
             grid.add(tile);
           }
@@ -151,7 +152,10 @@ Game.prototype = {
     // Add our players to their starting positions
     // TODO: Turn players into a constructor
     function addPlayers() {
-      players[1].sprite = game.add.sprite(players[1].location.x, players[1].location.y, 'player', 4, grid)
+      players[1].group = game.add.group();
+      players[1].group.x = players[1].location.x
+      players[1].group.y =players[1].location.y
+      players[1].sprite = game.add.sprite(0, 0, 'player', 4, players[1].group);
       players[1].sprite.anchor.setTo(0.5, 0.5);
       players[1].sprite.animations.add('walk1', [4,5,0,1,2,3]);
       players[1].sprite.animations.add('walk2', [10,11,6,7,8,9]);
@@ -159,8 +163,37 @@ Game.prototype = {
       players[1].sprite.animations.add('walk4', [22,23,18,19,20,21]);
       players[1].sprite.animations.add('walk5', [28,29,24,25,26,27]);
       players[1].sprite.animations.add('walk6', [34,35,30,31,32,33]);
-      console.log(players[1])
-      players[2].sprite = game.add.sprite(players[2].location.x, players[2].location.y, 'player', 22, grid)
+
+      players[1].orbsArray = [0,0,0];
+      players[1].orbs = game.add.group(players[1].group);
+      var tX = 25;
+      var tY = 14.434;
+      players[1].orbs.x = 0;
+      players[1].orbs.y = -16;
+
+      players[1].orbs[1] = game.add.sprite(50-tX, 0-tY, 'orbs', 3, players[1].orbs);
+      players[1].orbs[2] = game.add.sprite(0-tX, 0-tY, 'orbs', 0, players[1].orbs);
+      players[1].orbs[3] = game.add.sprite(25-tX, 43.301-tY, 'orbs', 0, players[1].orbs);
+
+      for (var i = 1; i <= 3; i++) {
+        var iX = Math.random() * (10 - 0) + 0;
+        var iY = Math.random() * (10 - 0) + 0;
+        players[1].orbs[i].floating = game.add.tween(players[1].orbs[i]).to( { x: '+'+iX, y:'+'+iY, alpha: 0.7}, 500, Phaser.Easing.Linear.None, true, 0, -1);
+        players[1].orbs[i].floating.yoyo(true, Math.random() * (50 - 0) + 0)
+      }
+
+
+      players[1].orbs[1].anchor.setTo(0.5);
+      players[1].orbs[2].anchor.setTo(0.5);
+      players[1].orbs[3].anchor.setTo(0.5);
+
+      players[1].orbs[1].type = 0;
+      players[1].orbs[2].type = 0;
+      players[1].orbs[3].type = 0;
+
+      var orbSpinning = game.add.tween(players[1].orbs).to({angle: 359}, 3000, null, true, 0, Infinity);
+
+      players[2].sprite = game.add.sprite(players[2].location.x, players[2].location.y, 'player', 22, grid);
       players[2].sprite.anchor.setTo(0.5, 0.5);
       players[2].sprite.animations.add('walk1', [4,5,0,1,2,3]);
       players[2].sprite.animations.add('walk2', [10,11,6,7,8,9]);
@@ -171,6 +204,24 @@ Game.prototype = {
     }
 
     function createInterface() {
+      this.uibar = game.add.nineSlice(0, (600), 'ui-bar', null, 800, 93);
+      game.add.existing(this.uibar);
+
+      soulStones = game.add.group();
+      // soulStones.anchor.setTo(0.5,0.5);
+      soulStones.x = game.world.centerX-(74*2.5);
+      soulStones.y = 610;
+      soulStones.stones = {};
+      for (var i = 0; i < stoneColours.length; i++) {
+        soulStones.stones[i] = game.add.sprite((i*74), 0, 'interface-soul-stones', i, soulStones);
+        soulStones.stones[i].color = stoneColours[i];
+        soulStones.stones[i].alpha = 0.5;
+        soulStones.stones[i].events.onInputDown.add(function() {
+          _this.invokeMana(this.color, this)
+          console.log('down')
+        }, soulStones.stones[i]);
+      }
+
       turnText = game.add.text(0, 0, players[playerTurn].name+"'s turn", {
             font: "16px Menlo",
             fill: "#8be9fd"
@@ -225,7 +276,10 @@ Game.prototype = {
   },
 
   start: function() {
-    this.displayAvailableDirections(players[playerTurn]);
+    console.log(players[playerTurn])
+    if(players[playerTurn].id === Player.id) {
+      this.displayAvailableDirections(players[playerTurn]);
+    }
   },
 
   getKeyByValue: function(obj, value) {
@@ -241,9 +295,9 @@ Game.prototype = {
 
     /*
       Directions are numerical starting at the right going Anti-clockwise
-         5 / \ 6
-        4 |   | 1
-         3 \ / 2
+         5 /  \ 6
+        4 |    | 1
+         3 \  / 2
     */
 
     var availableDirections = [];
@@ -337,10 +391,12 @@ Game.prototype = {
 
     if(distance > 0) {
       // define the tween to the                                                   //multiply the distance by 600 so the speed is the same to any desination
-      var tween = game.add.tween(players[playerTurn].sprite).to( { x: destination.x, y: destination.y }, 600*distance, null, true);
+      console.log(players[playerTurn].group)
+      var tween = game.add.tween(players[playerTurn].group).to( { x: destination.x, y: destination.y-(destination.verticalOffset/2) }, 600*distance, null, true);
       // add the callbacks
       tween.onStart.add(startCallback, this)
       tween.onComplete.add(completeCallback, this);
+      console.log(players[playerTurn].group)
     } else {
       this.pickMana();
     }
@@ -460,6 +516,43 @@ Game.prototype = {
   },
 
   pickMana: function() {
+    _this = this;
     phaseText.setText("Pick mana");
+    for (var i = 0; i < stoneColours.length; i++) {
+      soulStones.stones[i].alpha = 1;
+      soulStones.stones[i].inputEnabled = true;
+      soulStones.stones[i].input.useHandCursor = true;
+    }
+  },
+
+  invokeMana: function(color, stone) {
+    console.log(stone)
+    for (var i = 0; i < stoneColours.length; i++) {
+      soulStones.stones[i].alpha = 0.5;
+      soulStones.stones[i].inputEnabled = false;
+      soulStones.stones[i].input.useHandCursor = false;
+    }
+    var index = stoneColours.indexOf(color);
+    var length = players[playerTurn].orbsArray.length
+    if (length <= 2) {
+      players[playerTurn].orbs[length+1].frame = (index+1);
+      players[playerTurn].orbsArray.splice(length+1, 0, index+1);
+    } else {
+      players[playerTurn].orbsArray.splice(0, 1);
+      players[playerTurn].orbsArray.splice(2, 0, index+1);
+      console.log(players[playerTurn].orbsArray)
+
+      players[playerTurn].orbs[1].frame = players[playerTurn].orbsArray[0];
+      players[playerTurn].orbs[2].frame = players[playerTurn].orbsArray[1];
+      players[playerTurn].orbs[3].frame = players[playerTurn].orbsArray[2];
+    }
+
+    this.displayAvailableDirections(players[playerTurn]);
+    // console.log(index)
+  },
+
+  opponentChangedDirection: function(direction) {
+    this.changeDirection(players[playerTurn], direction);
+    console.log(direction);
   }
 };
