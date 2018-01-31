@@ -17,43 +17,55 @@ Client.findMatchStart = function() {
 Client.findMatchCancel = function() {
   Client.socket.emit('findMatchCancel', Player);
 };
-Client.playerChangedDirection = function(player, direction) {
-  console.log('emiting player direction change')
+
+// Game based out sockets
+Client.playerChangedDirection = function(direction) {
   Client.socket.emit('playerChangedDirection', Player, Match, direction);
 }
+Client.playerMovedLocation = function(coords) {
+  Client.socket.emit('playerMovedLocation', Player, Match, coords);
+}
+Client.playerInvokedMana = function(mana) {
+  Client.socket.emit('playerInvokedMana', Player, Match, mana);
+}
+
+
 // In
 Client.socket.on('playerConnectedToLobby', function(data) {
-  Lobby.prototype.playerConnected(data);
+  if (game.state.current === 'Lobby') {
+    Lobby.prototype.playerConnected(data);
+  }
 });
 Client.socket.on('lobbyAllPlayers', function(players) {
-  Lobby.allPlayers(players);
+  if (game.state.current === 'Lobby') {
+    Lobby.allPlayers(players);
+  }
 });
 Client.socket.on('playerSentLobbyMessage', function(message) {
-  console.log(message);
-  Lobby.prototype.createMessage(message);
+  if (game.state.current === 'Lobby') {
+    Lobby.prototype.createMessage(message);
+  }
 });
 Client.socket.on('findMatchStarted', function(gameId) {
   Player.gameId = gameId;
-  console.log('Match started');
-  console.log(gameId);
-
 });
 Client.socket.on('hostGameFound', function(gameId) {
-  console.log('hostGameFound');
-  console.log(gameId);
   Client.socket.emit('joinHostGame', { gameId: gameId, playerId: Player.id });
 });
-Client.socket.on('beginMatch', function(match) {
-  console.log('begin match');
-  Match = match;
+Client.socket.on('beginMatch', function(serverPlayers) {
+  ServerPlayers = serverPlayers;
+  console.log(JSON.stringify(serverPlayers));
+  console.log(ServerPlayers);
   game.state.start("Game");
 });
 
 // Game based in events
-Client.socket.on('playerChangedDirection', function(player, match, direction) {
-  console.log(player);
-  if(player.id !== Player.id) {
-    Game.prototype.opponentChangedDirection(player, direction);
-  }
-
+Client.socket.on('playerChangedDirection', function(direction) {
+  gameState.opponentChangedDirection(direction);
+});
+Client.socket.on('playerMovedLocation', function(coords) {
+  gameState.opponentMovedLocation(coords);
+});
+Client.socket.on('playerInvokedMana', function(mana) {
+  gameState.opponentInvokedMana(mana);
 });

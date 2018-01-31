@@ -87,8 +87,12 @@ router.post('/register', function (req, res, next) {
     if (error) {
       return next(error);
     } else {
+      var player = {
+        id: user._id,
+        name: user.username
+      };
       req.session.userId = user._id;
-      return res.send('Successfully regsitered');
+      return res.send(player);
     }
   });
 

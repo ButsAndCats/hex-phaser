@@ -7,8 +7,9 @@ Splash.prototype = {
     game.load.script('phaser-nineslice', 'lib/phaser-nineslice.js')
     game.load.script('phaser-scollable', 'lib/phaser-scrollable.min.js')
     // Classes
-    game.load.script('tile',  'src/classes/Tile.js');
-    game.load.script('arrow',  'src/classes/Arrow.js');
+    game.load.script('tile', 'src/classes/Tile.js');
+    game.load.script('arrow', 'src/classes/Arrow.js');
+    game.load.script('soulstone', 'src/classes/Soulstone.js');
     // States
     game.load.script('login','src/states/Login.js');
     game.load.script('register','src/states/Register.js');
@@ -70,11 +71,13 @@ Splash.prototype = {
   },
 
   addGameStates: function () {
+    gameState = new Game();
+    lobbyState = new Lobby();
     game.state.add("Login", Login);
     game.state.add("Register", Register);
-    game.state.add("Lobby", Lobby);
+    game.state.add("Lobby", lobbyState);
     game.state.add("Menu", Menu);
-    game.state.add("Game", Game);
+    game.state.add("Game", gameState);
     game.state.add("GameOver", GameOver);
     // game.state.add("Credits", Credits);
     // game.state.add("Options", Options);

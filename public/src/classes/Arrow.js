@@ -8,7 +8,6 @@ Arrow = function(game, x, y, arrowImage, angle, direction) {
   this.angle += angle;
   this.anchor.setTo(0.5, 0.5);
   this.visible = false;
-  arrowsArray.push(this);
 
   this.inputEnabled = true;
   this.input.useHandCursor = true;
@@ -39,7 +38,7 @@ Arrow.prototype.upClick = function() {
   // Hide the arrows
   directionalArrows.visible = false;
   // Send socket event
-  Client.playerChangedDirection(players[playerTurn], this.direction);
+  Client.playerChangedDirection(this.direction);
   // Change the player directionr
-  Game.prototype.changeDirection(players[playerTurn], this.direction);
+  gameState.changeDirection(players[playerTurn], this.direction);
 };

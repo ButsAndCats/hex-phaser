@@ -207,7 +207,11 @@ Register.prototype = {
       var this3 = this2;
       if (xmlhttp.readyState == XMLHttpRequest.DONE) {
         if (xmlhttp.status == 200) {
-          console.log(xmlhttp.response)
+          console.log(xmlhttp.response);
+          var response = JSON.parse(xmlhttp.response);
+          Player.name = response.name;
+          Player.id = response.id;
+          Client.playerConnected();
           this3.game.state.start("Lobby");
         }
         else if (xmlhttp.status == 400) {

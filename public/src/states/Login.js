@@ -88,6 +88,11 @@ Login.prototype = {
     var tabKey = this.game.input.keyboard.addKey(Phaser.Keyboard.TAB);
     tabKey.onDown.add(this.focusNextInput, this);
 
+    var enterKey = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+    enterKey.onDown.add(function() {
+      this.postForm(this.captureForm());
+    }, this);
+
   },
   preload: function() {
     game.load.nineSlice('login-input', 'assets/images/nine-slice-input.png', 25);
@@ -99,7 +104,6 @@ Login.prototype = {
     this.demoLink.events.onInputUp.add(function() {
       game.state.start("Game");
     });
-
 
     this.usernameText = game.add.nineSlice((game.world.centerX - (350/2)), game.world.centerY-50, 'login-input', null, 350, 50);
     this.passwordText = game.add.nineSlice((game.world.centerX - (350/2)), (game.world.centerY+10), 'login-input', null, 350, 50);

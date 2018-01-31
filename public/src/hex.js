@@ -1,8 +1,11 @@
 
 // Construct a new phaser game
-var game = new Phaser.Game(800, 680, Phaser.AUTO, 'Container', null, true),
-Main = function() {};
+var game = new Phaser.Game(800, 680, Phaser.AUTO, 'Container', null, true);
+var gameState;
+var lobbyState;
+var Main = function() {};
 var Player = {};
+var ServerPlayers = {};
 var Match = {};
 
 Main.prototype = {

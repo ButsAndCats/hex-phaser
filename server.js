@@ -85,6 +85,10 @@ io.on('connection', function(socket) {
   // Game based event
   // Called when a player chooses a direction
   socket.on('playerChangedDirection', playerChangedDirection);
+  // Player moved location
+  socket.on('playerMovedLocation', playerMovedLocation);
+  // Player invoked mana
+  socket.on('playerInvokedMana', playerInvokedMana);
 
   function playerConnected(player) {
     console.log(player.name+ ' connected');
@@ -185,21 +189,56 @@ io.on('connection', function(socket) {
   		var hostId = match.playerIds[0];
   		var guestId = match.playerIds[1];
 
+      match.players[1] = hostId;
   		match.players[hostId].goesFirst = true;
+  		match.players[hostId].isTurn = true;
+  		match.players[hostId].number = 1;
+  		match.players[hostId].location = {
+        i: 6,
+        j: -3
+      };
+  		match.players[hostId].direction = 1;
+  		match.players[hostId].speed = 1;
+
+      match.players[2] = guestId;
   		match.players[guestId].goesFirst = false;
+  		match.players[guestId].isTurn = false;
+  		match.players[guestId].number = 2;
+  		match.players[guestId].location = {
+        i:6,
+        j:8
+      };
+  		match.players[guestId].direction = 4;
+  		match.players[guestId].speed = 1;
 
   		if (coinFlip < 500000) {
     		match.players[hostId].goesFirst = false;
     		match.players[guestId].goesFirst = true;
   		}
 
+      console.log(match.players);
+
+      match.clientPlayers = {
+        1: {
+          name: match.players[hostId].player.name,
+          direction: match.players[hostId].direction,
+          isTurn: match.players[hostId].isTurn,
+          location: match.players[hostId].location
+        },
+        2: {
+          name: match.players[guestId].player.name,
+          direction: match.players[guestId].direction,
+          isTurn: match.players[guestId].isTurn,
+          location: match.players[guestId].location
+        }
+      }
 
   		// Save the game back to the database. This is critical because we need to detect
   		// if there is a game in progress if either client reloads their browser page.
   		saveGameInProgress(gameId, match);
 
   		// alert both clients that the game is ready to start
-  		matchBeginGame(gameId, match);
+  		matchBeginGame(gameId, match.clientPlayers);
 
   		// the match is fully completed on the server, so remove the players from waitingOnMatch array
   		delete playersWaitingForMatch[hostId];
@@ -207,11 +246,23 @@ io.on('connection', function(socket) {
     }
   }
 
+  // TODO:
+   // Mirror the match on the server to ensure that the players are moving to a possible location/direction
+   //  Or at least ensure that this player should even be moving now
   function playerChangedDirection(player, match, direction) {
-    console.log(player);
     console.log(match);
-    console.log(direction);
-    io.to(match.gameId).emit('playerChangedDirection', player, match, direction);
+    console.log(player);
+    io.to(match.gameId).emit('playerChangedDirection', direction);
+  }
+  function playerMovedLocation(player, match, coords) {
+    console.log(match);
+    console.log(player);
+    io.to(match.gameId).emit('playerMovedLocation', coords);
+  }
+  function playerInvokedMana(player, match, mana) {
+    console.log(match);
+    console.log(player);
+    io.to(match.gameId).emit('playerInvokedMana', mana);
   }
 
 });
@@ -245,10 +296,9 @@ function saveGameInProgress(gameId, match) {
 }
 
 // alert both clients that the game is ready to start
-function matchBeginGame(gameId, match) {
-  console.log(match)
+function matchBeginGame(gameId, players) {
 	// emit the begin game event to both clients
-	io.to(gameId).emit('beginMatch', match);
+	io.to(gameId).emit('beginMatch', players);
 }
 
 // Handle players that are looking for a match
